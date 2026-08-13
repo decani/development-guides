@@ -1,0 +1,22 @@
+# TEMPLATE - replace all <...> placeholders before use.
+[Unit]
+Description=<APP_DESCRIPTION>
+Wants=network-online.target
+After=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=jvmapps
+Group=appmgr
+
+WorkingDirectory=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>
+EnvironmentFile=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
+
+ExecStart=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/startWebApp.sh
+
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
