@@ -21,14 +21,17 @@ Release rules:
 
 1. Read the existing release-notes.md before making changes.
 2. Determine the next proposed global release number from its newest release section. If the file has no releases, use 1.
-3. Use the current UTC date.
+3. Determine the release date from the current UTC date and write it in ISO format.
 4. Create this level-one heading:
-   # Release <NUMBER> - <D MONTH YYYY> UTC
+   # Release <NUMBER> - <YYYY-MM-DD>
 5. Prepend the new section. Preserve all earlier sections unchanged and keep every section in strict descending release-number order.
-6. Do not include a time in the heading or Git tag.
+6. Do not include a time or timezone label in the heading or Git tag.
 7. Use this proposed annotated Git tag:
-   <APPLICATION-PREFIX>-<NUMBER>-<YYYY-MM-DD>-UTC
-8. If a proposed section already exists for this unreleased number, update that section instead of creating another one.
+   release-<NUMBER>-<YYYY-MM-DD>
+   The repository identifies the application, so do not prefix the tag with the application identifier.
+8. Use this annotated tag message:
+   Release <NUMBER> - <YYYY-MM-DD>
+9. If a proposed section already exists for this unreleased number, update that section instead of creating another one.
 
 Select issues as follows:
 
@@ -94,5 +97,7 @@ For Blagger, substitute:
 <OWNER>/<APPLICATION-REPOSITORY> = decani/blagger
 <APPLICATION-PREFIX> = BLG
 ```
+
+The application prefix is used to identify Blagger issues; it is not included in the repository-scoped release tag.
 
 The release number remains provisional until the candidate is built, deployed, smoke-tested, tagged and users are notified according to the release guide.
