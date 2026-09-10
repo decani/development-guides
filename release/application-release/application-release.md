@@ -10,32 +10,34 @@ Each application has a monotonically increasing global release number, beginning
 
 A release is identified by:
 
-- application identifier;
+- repository;
 - global release number;
-- UTC release date;
+- release date;
 - exact Git commit.
 
-For Blagger, release-note headings use:
+For Blagger, release-note headings and BLG release activities use:
 
 ```markdown
-# Release 1 - 10 September 2026 UTC
+# Release 1 - 2026-09-10
 ```
 
 Annotated Git tags use:
 
 ```text
-BLG-1-2026-09-10-UTC
+release-1-2026-09-10
 ```
 
 The general tag format is:
 
 ```text
-<APPLICATION>-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>-UTC
+release-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>
 ```
 
-The release number supplies a strict total ordering, including when several releases occur on the same UTC date. Times are therefore omitted from headings and tags.
+Tag names are repository-scoped, so they do not repeat the application identifier.
 
-The release-note heading and tag must contain the same release number and UTC date.
+The release number supplies a strict total ordering, including when several releases occur on the same date. Determine the release date in UTC and write it in ISO format. The `UTC` label and times are omitted because the convention already defines the date basis and the release number removes any ambiguity.
+
+The release-note heading, BLG release activity and tag must contain the same release number and date.
 
 ## Issue discipline
 
@@ -72,7 +74,7 @@ The hidden state records the application tag and the precise revisions of associ
 ```markdown
 <!--
 release-state:
-  application: BLG-1-2026-09-10-UTC
+  application: release-1-2026-09-10
   app-user: <COMMIT-SHA>
   database-access: <COMMIT-SHA>
   webapp-core: <COMMIT-SHA>
@@ -122,9 +124,9 @@ If the build or tests fail:
 1. Do not tag the commit.
 2. Do not notify users.
 3. Correct the problem.
-4. Amend the proposed release-note section if its contents or UTC date changed.
+4. Amend the proposed release-note section if its contents or release date changed.
 5. Commit the correction.
-6. repeat the clean build against the new exact commit.
+6. Repeat the clean build against the new exact commit.
 
 Do not create another release section or consume another release number for an unsuccessful candidate.
 
@@ -154,20 +156,20 @@ If deployment or smoke testing fails, do not tag or notify users. Correct the ca
 After the exact candidate has passed its clean build and production smoke test, create an annotated tag on that commit:
 
 ```bash
-git tag -a BLG-1-2026-09-10-UTC <COMMIT-SHA> -m "BLG release 1 - 10 September 2026 UTC"
+git tag -a release-1-2026-09-10 <COMMIT-SHA> -m "Release 1 - 2026-09-10"
 ```
 
 Inspect it before pushing:
 
 ```bash
-git show --stat BLG-1-2026-09-10-UTC
-git rev-list -n 1 BLG-1-2026-09-10-UTC
+git show --stat release-1-2026-09-10
+git rev-list -n 1 release-1-2026-09-10
 ```
 
 Confirm that it identifies the exact built and deployed commit, then push it:
 
 ```bash
-git push origin BLG-1-2026-09-10-UTC
+git push origin release-1-2026-09-10
 ```
 
 Never move or replace a pushed release tag. If a problem is discovered after the tag is pushed or users are notified, preserve the release as history and make the correction under the next release number.
@@ -178,7 +180,7 @@ Notify affected users only after deployment, smoke testing and tag publication s
 
 Keep the notification proportionate to the audience. It should normally contain:
 
-- the release number and UTC date;
+- the release number and date;
 - a link to the applicable release-note section or file;
 - any action users need to take;
 - any known limitation worth calling out.
@@ -189,7 +191,7 @@ If nobody requires an individual notification, recording and publishing the succ
 
 ## Final checks
 
-- The release-note heading and tag agree.
+- The release-note heading, BLG release activity and tag agree.
 - The tag identifies the exact commit that passed the clean build and production smoke test.
 - The new release-note section is first.
 - Release sections are in strict descending release-number order.
