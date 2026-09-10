@@ -11,6 +11,11 @@ This repository contains guides and supporting templates for processes that are 
 - [Deploying a JVM Web Application to Linux](deployment/linux-webapp-deployment/linux-webapp-deployment.md)
 - [Updating a Deployed JVM Web Application](deployment/webapp-update/webapp-update.md)
 
+### Releases
+
+- [Releasing an Application](release/application-release/application-release.md)
+- [Prompt: Generate or Update Application Release Notes](release/application-release/release-notes-prompt.md)
+
 ## Principles
 
 - Document processes that have actually been used.
