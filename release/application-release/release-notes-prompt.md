@@ -19,8 +19,8 @@ Associated repositories:
 
 Release rules:
 
-1. Read the existing release-notes.md and release-state.yml before making changes. If release-state.yml does not exist, treat this as the first release using a separate state file.
-2. Determine the next proposed global release number from the newest release section and release-state.yml. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
+1. Read the existing release-notes.md and documents/release-state.yml before making changes. If documents/release-state.yml does not exist, treat this as the first release using a separate state file.
+2. Determine the next proposed global release number from the newest release section and documents/release-state.yml. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
 3. Determine the release date from the current UTC date and write it in ISO format.
 4. Create this level-one heading:
    # Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
@@ -36,7 +36,7 @@ Release rules:
 Select issues as follows:
 
 1. For the initial release, inspect all closed issues in the application repository and scan the available commit history in the application and associated repositories.
-2. For subsequent releases, read release-state.yml and inspect commits after the recorded application release and associated-repository revisions.
+2. For subsequent releases, read documents/release-state.yml and inspect commits after the recorded application release and associated-repository revisions.
 3. Extract issue identifiers from all lines of commit messages, not only their subjects.
 4. Include closed application issues incorporated into this release.
 5. Resolve cross-repository identifiers, including USER, DBA, CLAM and other prefixes, to their owning repositories.
@@ -66,7 +66,7 @@ Writing rules:
 - Keep one issue to one paragraph.
 - Keep release metadata out of release-notes.md; it is a public user-facing document.
 
-Create or replace release-state.yml at the root of the application repository using:
+Create or replace documents/release-state.yml in the application repository using:
 
 ```yaml
 release: release-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>
@@ -87,7 +87,7 @@ Before writing:
 3. Show ambiguous references and apparently user-visible untracked commits.
 4. Ask for confirmation if any inclusion decision would materially change the release notes.
 
-After confirmation, update release-notes.md and release-state.yml in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
+After confirmation, update release-notes.md and documents/release-state.yml in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
 ```
 
 ## Blagger values
