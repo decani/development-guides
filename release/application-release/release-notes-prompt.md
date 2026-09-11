@@ -19,24 +19,24 @@ Associated repositories:
 
 Release rules:
 
-1. Read the existing release-notes.md before making changes.
-2. Determine the next proposed global release number from its newest release section. If the file has no releases, use 1.
+1. Read the existing release-notes.md and release-state.yml before making changes. If release-state.yml does not exist, treat this as the first release using a separate state file.
+2. Determine the next proposed global release number from the newest release section and release-state.yml. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
 3. Determine the release date from the current UTC date and write it in ISO format.
 4. Create this level-one heading:
-   # Release <NUMBER> - <YYYY-MM-DD>
-5. Prepend the new section. Preserve all earlier sections unchanged and keep every section in strict descending release-number order.
+   # Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
+5. Prepend the new section. Preserve all earlier sections unchanged and keep every section in strict descending global release-number order.
 6. Do not include a time or timezone label in the heading or Git tag.
 7. Use this proposed annotated Git tag:
-   release-<NUMBER>-<YYYY-MM-DD>
+   release-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>
    The repository identifies the application, so do not prefix the tag with the application identifier.
 8. Use this annotated tag message:
-   Release <NUMBER> - <YYYY-MM-DD>
-9. If a proposed section already exists for this unreleased number, update that section instead of creating another one.
+   Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
+9. If a proposed section already exists for this unreleased global release number, update that section instead of creating another one.
 
 Select issues as follows:
 
 1. For the initial release, inspect all closed issues in the application repository and scan the available commit history in the application and associated repositories.
-2. For subsequent releases, read the newest release-state comment and inspect commits after the recorded application release and associated-repository revisions.
+2. For subsequent releases, read release-state.yml and inspect commits after the recorded application release and associated-repository revisions.
 3. Extract issue identifiers from all lines of commit messages, not only their subjects.
 4. Include closed application issues incorporated into this release.
 5. Resolve cross-repository identifiers, including USER, DBA, CLAM and other prefixes, to their owning repositories.
@@ -64,19 +64,21 @@ Writing rules:
 - Describe observable behaviour or meaningful operational protection.
 - Do not claim behaviour unsupported by the issue or commits.
 - Keep one issue to one paragraph.
+- Keep release metadata out of release-notes.md; it is a public user-facing document.
 
-At the end of the new section, add a non-rendered HTML comment:
+Create or replace release-state.yml at the root of the application repository using:
 
-<!--
-release-state:
+```yaml
+release: release-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>
+repositories:
   application: <PROPOSED-RELEASE-TAG>
   app-user: <INCORPORATED-COMMIT-SHA>
   database-access: <INCORPORATED-COMMIT-SHA>
   webapp-core: <INCORPORATED-COMMIT-SHA>
   configuration: <INCORPORATED-COMMIT-SHA>
--->
+```
 
-Record the precise associated-repository revisions incorporated into the application, not simply whichever commits happen to be newest.
+Record the precise associated-repository revisions incorporated into the application, not simply whichever commits happen to be newest. Do not put release-state metadata in an HTML comment or any other part of release-notes.md.
 
 Before writing:
 
@@ -85,7 +87,7 @@ Before writing:
 3. Show ambiguous references and apparently user-visible untracked commits.
 4. Ask for confirmation if any inclusion decision would materially change the release notes.
 
-After confirmation, update release-notes.md in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
+After confirmation, update release-notes.md and release-state.yml in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
 ```
 
 ## Blagger values
@@ -100,4 +102,4 @@ For Blagger, substitute:
 
 The application prefix is used to identify Blagger issues; it is not included in the repository-scoped release tag.
 
-The release number remains provisional until the candidate is built, deployed, smoke-tested, tagged and users are notified according to the release guide.
+The global release number remains provisional until the candidate is built, deployed, smoke-tested, tagged and users are notified according to the release guide.
