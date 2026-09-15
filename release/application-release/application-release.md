@@ -138,7 +138,7 @@ Push the successfully built candidate commit:
 git push origin <BRANCH>
 ```
 
-Deploy that exact commit using the application's deployment guide. Do not deploy an uncommitted working tree or a different branch head.
+Deploy that exact commit using the [Web Application Update guide](../../deployment/webapp-update/webapp-update.md). Do not deploy an uncommitted working tree or a different branch head.
 
 Perform the application's production smoke test. At minimum, verify:
 
