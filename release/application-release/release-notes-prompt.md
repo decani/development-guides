@@ -22,8 +22,8 @@ Release rules:
 1. Read the existing release-notes.md and documents/release-state.yml before making changes. If documents/release-state.yml does not exist, treat this as the first release using a separate state file.
 2. Determine the next proposed global release number from the newest release section and documents/release-state.yml. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
 3. Determine the release date from the current UTC date and write it in ISO format.
-4. Create this level-one heading:
-   # Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
+4. Preserve the document's single level-one `# Release Notes` page heading and create this level-two release heading:
+   ## Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
 5. Prepend the new section. Preserve all earlier sections unchanged and keep every section in strict descending global release-number order.
 6. Do not include a time or timezone label in the heading or Git tag.
 7. Use this proposed annotated Git tag:
@@ -48,9 +48,9 @@ Select issues as follows:
 11. Flag ambiguous identifiers or inclusion decisions for review rather than silently guessing.
 12. Do not include commits without an issue identifier as release-note entries. Report them separately for review if they appear user-visible.
 
-Write each included issue as:
+Write each included issue as a level-three heading:
 
-## [<ISSUE TITLE>](<CANONICAL ISSUE URL>)
+### [<ISSUE TITLE>](<CANONICAL ISSUE URL>)
 
 <ONE SHORT USER-FACING PARAGRAPH>
 

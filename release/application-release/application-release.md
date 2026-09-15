@@ -18,7 +18,7 @@ A release is identified by:
 For Blagger, release-note headings and BLG release activities use:
 
 ```markdown
-# Release 1 - 2026-09-10
+## Release 1 - 2026-09-10
 ```
 
 Annotated Git tags use:
@@ -53,10 +53,10 @@ Do not use `internal-only` merely because implementation occurred in a shared li
 
 The application's `release-notes.md` contains successful releases in strict reverse release-number order.
 
-Each release section contains:
+`release-notes.md` has one level-one page heading. Each release section contains:
 
-1. A level-one release heading.
-2. Linked issue titles.
+1. A level-two release heading.
+2. Linked issue titles as level-three headings.
 3. One terse, user-facing paragraph per issue.
 4. A hidden `release-state` HTML comment.
 
