@@ -51,7 +51,7 @@ Do not use `internal-only` merely because implementation occurred in a shared li
 
 ## Release-note conventions
 
-The application's `release-notes.md` contains successful releases in strict reverse release-number order.
+The application's release-notes file contains successful releases in strict reverse release-number order. For Blagger, it is `blagger-web/src/main/resources/documents/release-notes.md`.
 
 `release-notes.md` has one level-one page heading. Each release section contains:
 
@@ -91,7 +91,7 @@ HTML comments remain available in the generated HTML source but are not displaye
 3. Confirm the application and associated repositories contain the intended revisions.
 4. Confirm the application working tree is clean.
 5. Update the local release branch from its remote without discarding local work.
-6. Read the newest entry in `release-notes.md` and provisionally allocate the next global release number.
+6. Read the newest entry in the application's release-notes file and provisionally allocate the next global release number.
 7. Generate or update the new release-note section using the release-notes prompt.
 8. Review every entry for correctness, completeness and user-facing wording.
 9. Confirm issues labelled `internal-only` are absent.
