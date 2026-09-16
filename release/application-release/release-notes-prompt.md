@@ -11,6 +11,10 @@ Application repository:
 Application issue prefix:
 - <APPLICATION-PREFIX>
 
+Release files:
+- <RELEASE-NOTES-PATH>
+- <RELEASE-STATE-PATH>
+
 Associated repositories:
 - decani/app-user
 - decani/database-access
@@ -19,8 +23,8 @@ Associated repositories:
 
 Release rules:
 
-1. Read the existing release-notes.md and documents/release-state.yml before making changes. If documents/release-state.yml does not exist, treat this as the first release using a separate state file.
-2. Determine the next proposed global release number from the newest release section and documents/release-state.yml. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
+1. Read the existing `<RELEASE-NOTES-PATH>` and `<RELEASE-STATE-PATH>` before making changes. If `<RELEASE-STATE-PATH>` does not exist, treat this as the first release using a separate state file.
+2. Determine the next proposed global release number from the newest release section and `<RELEASE-STATE-PATH>`. If neither file records a release, use 1. If they disagree, report the discrepancy rather than guessing.
 3. Determine the release date from the current UTC date and write it in ISO format.
 4. Preserve the document's single level-one `# Release Notes` page heading and create this level-two release heading:
    ## Release <GLOBAL-RELEASE-NUMBER> - <YYYY-MM-DD>
@@ -64,9 +68,9 @@ Writing rules:
 - Describe observable behaviour or meaningful operational protection.
 - Do not claim behaviour unsupported by the issue or commits.
 - Keep one issue to one paragraph.
-- Keep release metadata out of release-notes.md; it is a public user-facing document.
+- Keep release metadata out of `<RELEASE-NOTES-PATH>`; it is a public user-facing document.
 
-Create or replace documents/release-state.yml in the application repository using:
+Create or replace `<RELEASE-STATE-PATH>` in the application repository using:
 
 ```yaml
 release: release-<GLOBAL-RELEASE-NUMBER>-<YYYY-MM-DD>
@@ -78,7 +82,7 @@ repositories:
   configuration: <INCORPORATED-COMMIT-SHA>
 ```
 
-Record the precise associated-repository revisions incorporated into the application, not simply whichever commits happen to be newest. Do not put release-state metadata in an HTML comment or any other part of release-notes.md.
+Record the precise associated-repository revisions incorporated into the application, not simply whichever commits happen to be newest. Do not put release-state metadata in an HTML comment or any other part of `<RELEASE-NOTES-PATH>`.
 
 Before writing:
 
@@ -87,7 +91,7 @@ Before writing:
 3. Show ambiguous references and apparently user-visible untracked commits.
 4. Ask for confirmation if any inclusion decision would materially change the release notes.
 
-After confirmation, update release-notes.md and documents/release-state.yml in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
+After confirmation, update `<RELEASE-NOTES-PATH>` and `<RELEASE-STATE-PATH>` in the application repository. Do not create a Git tag, deploy the application, close issues or notify users.
 ```
 
 ## Blagger values
@@ -98,6 +102,8 @@ For Blagger, substitute:
 <APPLICATION-NAME> = Blagger
 <OWNER>/<APPLICATION-REPOSITORY> = decani/blagger
 <APPLICATION-PREFIX> = BLG
+<RELEASE-NOTES-PATH> = blagger-web/src/main/resources/documents/release-notes.md
+<RELEASE-STATE-PATH> = blagger-web/src/main/resources/documents/release-state.yml
 ```
 
 The application prefix is used to identify Blagger issues; it is not included in the repository-scoped release tag.
