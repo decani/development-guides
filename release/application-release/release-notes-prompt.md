@@ -54,7 +54,7 @@ Select issues as follows:
 
 Write each included issue as a level-three heading:
 
-### [<ISSUE TITLE>](<CANONICAL ISSUE URL>)
+### <ISSUE IDENTIFIER> <ISSUE TITLE>
 
 <ONE SHORT USER-FACING PARAGRAPH>
 
@@ -68,6 +68,7 @@ Writing rules:
 - Describe observable behaviour or meaningful operational protection.
 - Do not claim behaviour unsupported by the issue or commits.
 - Keep one issue to one paragraph.
+- Keep issue identifiers and titles as plain text. Do not link them to GitHub issues because the release notes are user-facing and the repositories may be private.
 - Keep release metadata out of `<RELEASE-NOTES-PATH>`; it is a public user-facing document.
 
 Create or replace `<RELEASE-STATE-PATH>` in the application repository using:
