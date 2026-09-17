@@ -56,7 +56,7 @@ The application's release-notes file contains successful releases in strict reve
 `release-notes.md` has one level-one page heading. Each release section contains:
 
 1. A level-two release heading.
-2. Linked issue titles as level-three headings.
+2. Issue identifiers and titles as plain-text level-three headings.
 3. One terse, user-facing paragraph per issue.
 4. A hidden `release-state` HTML comment.
 
@@ -67,7 +67,7 @@ Use third-person present tense:
 - `Prevents...`
 - `Fixes a bug where...`
 
-List an issue once even when commits bearing its identifier appear in several repositories. Link its title to the issue in its owning repository.
+List an issue once even when commits bearing its identifier appear in several repositories. Keep its identifier and title as plain text rather than linking to its issue, because the release notes are user-facing and the repositories may be private.
 
 The hidden state records the application tag and the precise revisions of associated repositories:
 
