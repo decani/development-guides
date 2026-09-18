@@ -257,8 +257,11 @@ Verify at least:
 - authentication succeeds, if applicable
 - the main application page loads
 - existing production data is present
+- the published release notes show the expected release number, date and changes, if the application exposes release notes
 - a small representative application operation succeeds
 - application logs contain no unexpected errors
+
+For Blagger, open `/documents/release-notes` and confirm that the newest section matches the release being deployed.
 
 The functional smoke test should be application-specific.
 
@@ -334,5 +337,6 @@ Repeat the normal smoke test.
 - [ ] systemd reports the service active
 - [ ] Startup logs contain no unexpected errors
 - [ ] HTTPS smoke test passes
+- [ ] Published release notes match the expected release, if applicable
 - [ ] Representative application operation succeeds
 - [ ] Staged JAR removed
