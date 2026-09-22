@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# TEMPLATE - replace all <...> placeholders before use.
+# TEMPLATE - replace <APP_NAME> and add required application-specific properties.
+# systemd loads config/webApp.env; this script does not source it.
 set -euo pipefail
 
-readonly DeploymentDirectory="/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>"
-
-mkdir -p "$LogFilePath"
+readonly deploymentDirectory="/opt/dks/<APP_NAME>"
 
 exec /usr/bin/java \
     -DDeployment="$Deployment" \
@@ -14,8 +13,5 @@ exec /usr/bin/java \
     -DDatabaseUserName="$DatabaseUserName" \
     -DDatabaseUserPassword="$DatabaseUserPassword" \
     -DWebAppServerHttpPort="$WebAppServerHttpPort" \
-    -DWebAppUserName="$WebAppUserName" \
-    -DWebAppUserPassword="$WebAppUserPassword" \
     -DLogFilePath="$LogFilePath" \
-    -cp "$DeploymentDirectory/<APP_JAR>" \
-    <WEBAPP_MAIN_CLASS>
+    -jar "$deploymentDirectory/app.jar"
