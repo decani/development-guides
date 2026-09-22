@@ -1,49 +1,38 @@
 #!/usr/bin/env bash
-# TEMPLATE - replace all <...> placeholders before use.
+# TEMPLATE - replace <APP_NAME> and <MIGRATE_MAIN_CLASS>.
 set -euo pipefail
+umask 077
 
-ConfigFile="/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env"
-DeploymentDirectory="/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>"
+readonly deploymentDirectory="/opt/dks/<APP_NAME>"
+readonly configFile="$deploymentDirectory/config/webApp.env"
 
-if [[ ! -r "$ConfigFile" ]]; then
-    echo "Cannot read configuration file: $ConfigFile" >&2
+if [[ ! -r "$configFile" ]]; then
+    echo "Cannot read configuration: $configFile" >&2
     exit 1
 fi
 
-source "$ConfigFile"
+source "$configFile"
+cd "$deploymentDirectory"
 
-cd "$DeploymentDirectory"
+readonly backupFile="$deploymentDirectory/backups/${DatabaseName}-pre-migrate-$(date +%Y%m%d-%H%M%S).sql"
 
-mkdir -p "$LogFilePath"
-
-BackupDirectory="$DeploymentDirectory/backups"
-mkdir -p "$BackupDirectory"
-
-BackupTimestamp=$(date +"%Y%m%d-%H%M%S")
-BackupFilename="$BackupDirectory/${DatabaseName}-pre-migrate-database-backup-${BackupTimestamp}.sql"
-
-echo "Backing up database..."
-
-PGPASSWORD="$DatabaseUserPassword" \
-pg_dump \
+echo "Backing up $DatabaseName..."
+PGPASSWORD="$DatabaseUserPassword" pg_dump \
     -h "$DatabaseHost" \
     -p "$DatabasePort" \
     -U "$DatabaseUserName" \
     --no-owner \
     --no-privileges \
-    "$DatabaseName" \
-    > "$BackupFilename"
+    -f "$backupFile" \
+    "$DatabaseName"
 
-echo "Database backed up to:"
-echo "  $BackupFilename"
-
-java \
+echo "Database backed up to $backupFile"
+/usr/bin/java \
     -DDatabaseHost="$DatabaseHost" \
     -DDatabasePort="$DatabasePort" \
+    -DDatabaseName="$DatabaseName" \
     -DDatabaseUserName="$DatabaseUserName" \
     -DDatabaseUserPassword="$DatabaseUserPassword" \
-    -DDatabaseName="$DatabaseName" \
     -DLogFilePath="$LogFilePath" \
-    -cp "./<APP_JAR>" \
-    <MIGRATE_MAIN_CLASS> \
-    "$@"
+    -cp "$deploymentDirectory/app.jar" \
+    <MIGRATE_MAIN_CLASS>
