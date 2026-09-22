@@ -143,10 +143,10 @@ Create the application role:
 
 ```sql
 create role <DATABASE_USER> login;
-\\password <DATABASE_USER>
+\password <DATABASE_USER>
 ```
 
-The `\\password` command prompts without placing the password in shell history or the SQL transcript. Create the database owned by that role:
+The `\password` command prompts without placing the password in shell history or the SQL transcript. Create the database owned by that role:
 
 ```sql
 create database <DATABASE_NAME>
