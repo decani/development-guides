@@ -12,7 +12,7 @@ The resulting application:
 - uses HTTPS with a Let's Encrypt certificate managed by Certbot
 - can run alongside other web applications on the same machine
 
-The examples use placeholders such as `<APP_NAME>`, `<DEPLOYMENT_NAME>` and `<HTTP_PORT>`. Replace every `<...>` placeholder before using a template.
+The examples use placeholders such as `<APP_NAME>`, `<HTTP_PORT>` and `<HOSTNAME>`. Replace every `<...>` placeholder before using a template. Use a short lowercase application identifier for `<APP_NAME>` (for example, `hta`). The deployed JAR is always `app.jar`.
 
 Reusable templates are stored in [`files/`](files/):
 
@@ -54,7 +54,7 @@ nginx -v
 certbot --version
 ```
 
-The Java version must be compatible with the version used to build the application.
+The Java version must be compatible with the version used to build the application. The application JAR must include a `Main-Class` manifest entry so the startup script can use `java -jar`.
 
 Do not mix a large operating-system or platform upgrade into an application deployment unless it is intentionally part of the work. A known-good host is a useful deployment baseline.
 
@@ -102,14 +102,14 @@ The service account does not need a password or interactive login. Administrator
 Create a production deployment directory:
 
 ```bash
-sudo mkdir -p /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/{backups,config,logs}
+sudo mkdir -p /opt/dks/<APP_NAME>/{backups,config,logs}
 ```
 
-A typical deployment is:
+Ensure `/opt/dks` exists and is traversable. A typical deployment is:
 
 ```text
-/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/
-├── <APP_JAR>
+/opt/dks/<APP_NAME>/
+├── app.jar
 ├── startWebApp.sh
 ├── migrateDatabase.sh
 ├── config/
@@ -121,14 +121,13 @@ A typical deployment is:
 Set ownership and permissions appropriate to the application. For example:
 
 ```bash
-sudo chown -R jvmapps:appmgr /opt/<APP_NAME>
-sudo chmod 750 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>
-sudo chmod 750 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config
-sudo chmod 775 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/logs
-sudo chmod 750 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/backups
+sudo chown -R jvmapps:appmgr /opt/dks/<APP_NAME>
+sudo chmod 755 /opt/dks
+sudo chmod 750 /opt/dks/<APP_NAME> /opt/dks/<APP_NAME>/config /opt/dks/<APP_NAME>/backups
+sudo chmod 775 /opt/dks/<APP_NAME>/logs
 ```
 
-Deployment scripts can instead be owned by `root:appmgr` and made executable by the group.
+Install deployment scripts as `root:appmgr` with mode `750`. Check the owner and group after editing: `sudoedit` can leave a new script owned by `root:root`, causing systemd `203/EXEC` (permission denied) for `jvmapps`.
 
 ## PostgreSQL database
 
@@ -143,12 +142,11 @@ sudo -u postgres psql
 Create the application role:
 
 ```sql
-create role <DATABASE_USER>
-    login
-    password '<DATABASE_PASSWORD>';
+create role <DATABASE_USER> login;
+\\password <DATABASE_USER>
 ```
 
-Create the database owned by that role:
+The `\\password` command prompts without placing the password in shell history or the SQL transcript. Create the database owned by that role:
 
 ```sql
 create database <DATABASE_NAME>
@@ -222,7 +220,7 @@ If Liquibase tables are present in the source, the restore carries the existing 
 Copy [`files/webApp.env`](files/webApp.env) to:
 
 ```text
-/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
+/opt/dks/<APP_NAME>/config/webApp.env
 ```
 
 **Replace every placeholder and add or remove application-specific properties as required.**
@@ -230,26 +228,24 @@ Copy [`files/webApp.env`](files/webApp.env) to:
 The environment file contains secrets, so restrict access:
 
 ```bash
-sudo chown root:appmgr /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
-sudo chmod 640 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
+sudo chown root:appmgr /opt/dks/<APP_NAME>/config/webApp.env
+sudo chmod 640 /opt/dks/<APP_NAME>/config/webApp.env
 ```
 
 Do not commit real production passwords to git.
 
 ## Deploy the application JAR
 
-Build the deployable JAR on the development machine and copy it to the Linux host, for example:
+Build and test the deployable JAR on the development machine. Check its `Main-Class` manifest entry, then copy it to the Linux host under the standard name `app.jar`, for example:
 
 ```bash
-scp <APP_JAR> <ADMIN_USER>@<SERVER>:~/<APP_JAR>
+scp <LOCAL_JAR_PATH> <ADMIN_USER>@<SERVER>:~/app.jar
 ```
 
 Install it into the deployment directory:
 
 ```bash
-sudo mv ~/<APP_JAR> /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/<APP_JAR>
-sudo chown jvmapps:appmgr /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/<APP_JAR>
-sudo chmod 640 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/<APP_JAR>
+sudo install -o jvmapps -g appmgr -m 640 ~/app.jar /opt/dks/<APP_NAME>/app.jar
 ```
 
 ## Database migration script
@@ -260,22 +256,24 @@ It:
 
 1. loads the production environment
 2. creates a portable pre-migration database backup
-3. runs the application's Liquibase migration entry point
+3. runs the application's Liquibase migration entry point from `app.jar`
+
+Replace `<MIGRATE_MAIN_CLASS>` with the **application's** migration entry point. For HTA this is `com.dks.hta.MigrateDatabase`; a dependency may also package a class with the same simple name. Keep the backup and migration as one fail-fast command.
 
 Install it, for example:
 
 ```bash
-sudo chown root:appmgr /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/migrateDatabase.sh
-sudo chmod 750 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/migrateDatabase.sh
+sudo chown root:appmgr /opt/dks/<APP_NAME>/migrateDatabase.sh
+sudo chmod 750 /opt/dks/<APP_NAME>/migrateDatabase.sh
 ```
 
 Run migration as the JVM service user:
 
 ```bash
-sudo -u jvmapps /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/migrateDatabase.sh
+sudo -u jvmapps /opt/dks/<APP_NAME>/migrateDatabase.sh
 ```
 
-Verify the migration history if needed:
+On first deployment, run the migration before starting the service. Check that the output reports successful changesets and that the backup file exists. Verify the migration history if needed:
 
 ```bash
 psql \
@@ -292,28 +290,28 @@ Copy [`files/startWebApp.sh`](files/startWebApp.sh) to the deployment directory 
 Make it executable:
 
 ```bash
-sudo chown root:appmgr /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/startWebApp.sh
-sudo chmod 750 /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/startWebApp.sh
+sudo chown root:appmgr /opt/dks/<APP_NAME>/startWebApp.sh
+sudo chmod 750 /opt/dks/<APP_NAME>/startWebApp.sh
 ```
 
-systemd will load the environment file automatically. For a manual test, explicitly load it first:
+The JAR must have a `Main-Class` manifest. Confirm with `unzip -p app.jar META-INF/MANIFEST.MF`. systemd will load the environment file automatically. For a manual test, explicitly load it first:
 
 ```bash
 sudo -u jvmapps bash -c '
 set -a
-source /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
+source /opt/dks/<APP_NAME>/config/webApp.env
 set +a
-exec /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/startWebApp.sh
+exec /opt/dks/<APP_NAME>/startWebApp.sh
 '
 ```
 
 Verify the application responds on its local port:
 
 ```bash
-curl -I http://127.0.0.1:<HTTP_PORT>/
+curl -sS -o /dev/null -w '%{http_code} %{content_type} %{size_download} bytes\n' http://127.0.0.1:<HTTP_PORT>/signin
 ```
 
-A `401 Unauthorized` response can be a successful test if the application uses Basic Auth.
+Use an application route that exists. A `401 Unauthorized` response can be successful with Basic Auth. Check a normal `GET`; a Javalin `HEAD` request may report `200` with an empty `text/plain` body.
 
 Stop the manually started application before configuring systemd.
 
@@ -337,8 +335,10 @@ sudo systemctl status <APP_NAME> --no-pager
 View logs with:
 
 ```bash
-sudo journalctl -u <APP_NAME>
+sudo journalctl -u <APP_NAME> -n 60 --no-pager
 ```
+
+If systemd reports `203/EXEC`, check the script's execute permissions, group ownership (`root:appmgr`), parent directory traversal permissions and line endings before debugging Java.
 
 The `EnvironmentFile=` entry supplies the environment to `startWebApp.sh`; the startup script does not source the file itself.
 
@@ -369,7 +369,7 @@ Each JVM application should use its own local HTTP port. nginx exposes applicati
 For example:
 
 ```text
-myapp.example.com -> nginx -> 127.0.0.1:7002
+ht.chingkerrs.online -> nginx -> 127.0.0.1:7003
 ```
 
 The application's JVM HTTP port should not be exposed publicly.
@@ -377,18 +377,14 @@ The application's JVM HTTP port should not be exposed publicly.
 Copy [`files/webapp.conf`](files/webapp.conf) to:
 
 ```text
-/etc/nginx/sites-available/<APP_NAME>
+/etc/nginx/conf.d/<APP_NAME>.conf
 ```
+
+Check the active nginx includes first with `sudo nginx -T`. Use `conf.d` when it is included, as on the Pi used for HTA. On hosts that only include `sites-enabled/*`, install and enable the site there instead. A file in `sites-available` alone has no effect.
 
 Replace `<HOSTNAME>` and `<HTTP_PORT>`.
 
-Enable the site:
-
-```bash
-sudo ln -s \
-    /etc/nginx/sites-available/<APP_NAME> \
-    /etc/nginx/sites-enabled/<APP_NAME>
-```
+Files in an included `conf.d/` directory are active without a symlink.
 
 Test the nginx configuration:
 
@@ -405,10 +401,10 @@ sudo systemctl reload nginx
 Verify nginx is routing the hostname to the application:
 
 ```bash
-curl -I -H 'Host: <HOSTNAME>' http://127.0.0.1/
+curl -sS -o /dev/null -w '%{http_code} %{content_type} %{size_download} bytes\n' -H 'Host: <HOSTNAME>' http://127.0.0.1/signin
 ```
 
-A `401 Unauthorized` response can be a successful test if the application uses Basic Auth.
+Use an application route that exists. If the result is unexpected, inspect the response body and the active nginx configuration.
 
 ## HTTPS with Certbot
 
@@ -423,12 +419,16 @@ Certbot obtains and installs the Let's Encrypt certificate, updates nginx for HT
 Verify externally:
 
 ```bash
-curl -I https://<HOSTNAME>/
+curl -sS -o /dev/null -w '%{http_code} %{content_type} %{size_download} bytes\n' https://<HOSTNAME>/signin
 ```
 
-Then test the application in a browser.
+Then use a phone with Wi-Fi disabled to verify the public HTTPS route, sign in, create and edit a representative record, sign out, and install the PWA. Check its manifest and static assets through the public origin. For PWAs, HTTPS is required for normal service-worker/installability behaviour.
 
-For PWAs, HTTPS is also required for normal service-worker/installability behaviour.
+## Verify backups and isolation
+
+A successful `pg_dump` is only a backup creation check. Restore a current backup into a separate, disposable test database, using `psql --single-transaction -v ON_ERROR_STOP=1`, then inspect expected records. Do not restore over the production database. Set up automatic backups and retention separately; the pre-migration backup only runs when a release is deployed. Store a copy off the Pi if the data cannot be replaced.
+
+For multi-user applications, verify a second account cannot read or edit the first account's records, including by changing URLs or submitted IDs.
 
 ## Verify automatic startup
 
@@ -451,6 +451,8 @@ The service should report:
 ```text
 Active: active (running)
 ```
+
+When rebooting a shared Pi, check the other application services and public URLs too.
 
 Verify the public HTTPS URL again. If several applications share the host, verify them all after reboot.
 
@@ -493,8 +495,8 @@ sudo journalctl -b -u <APP_NAME> --no-pager
 Check both the log directory and existing log-file ownership:
 
 ```bash
-sudo ls -ld /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/logs
-sudo ls -l /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/logs
+sudo ls -ld /opt/dks/<APP_NAME>/logs
+sudo ls -l /opt/dks/<APP_NAME>/logs
 ```
 
 An existing file accidentally created by `root` may be unwritable by `jvmapps` even when the directory permissions are correct.
@@ -502,7 +504,7 @@ An existing file accidentally created by `root` may be unwritable by `jvmapps` e
 Fix ownership rather than making logs world-writable:
 
 ```bash
-sudo chown jvmapps:appmgr /opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/logs/<LOG_FILE>
+sudo chown jvmapps:appmgr /opt/dks/<APP_NAME>/logs/<LOG_FILE>
 ```
 
 ### Database restore partially succeeds
