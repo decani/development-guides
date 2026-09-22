@@ -1,4 +1,4 @@
-# TEMPLATE - replace all <...> placeholders before use.
+# TEMPLATE - replace <APP_NAME> and <APP_DESCRIPTION>.
 [Unit]
 Description=<APP_DESCRIPTION>
 Wants=network-online.target
@@ -8,12 +8,9 @@ After=network-online.target postgresql.service
 Type=simple
 User=jvmapps
 Group=appmgr
-
-WorkingDirectory=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>
-EnvironmentFile=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/config/webApp.env
-
-ExecStart=/opt/<APP_NAME>/deployments/<DEPLOYMENT_NAME>/startWebApp.sh
-
+WorkingDirectory=/opt/dks/<APP_NAME>
+EnvironmentFile=/opt/dks/<APP_NAME>/config/webApp.env
+ExecStart=/opt/dks/<APP_NAME>/startWebApp.sh
 Restart=on-failure
 RestartSec=5
 SuccessExitStatus=143
